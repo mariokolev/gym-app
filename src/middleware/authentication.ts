@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
 import jwt from 'jsonwebtoken';
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
@@ -6,7 +7,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     const jwtToken = header?.split(' ')[1];
 
     if (!jwtToken) {
-        return res.status(401).json({ message: 'Access denied, token missing!' });
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Access denied, token missing!' });
     }
 
     try {
@@ -14,6 +15,6 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         (req as any).user = decoded;
         next();
     } catch (error) {
-        return res.status(403).json({ message: 'Invalid token'});
+        return res.status(StatusCodes.FORBIDDEN).json({ message: 'Invalid token'});
     }
 };

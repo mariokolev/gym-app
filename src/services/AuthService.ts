@@ -4,6 +4,7 @@ import UserService from "./UserService";
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { InvalidCredentials, NotFoundError } from "../errors/CustomErrors";
 import Permission from "../entities/Permission";
+import { ErrorMessages } from "../errors/ErrorMessages";
 
 interface AuthParams {
     email: string;
@@ -29,12 +30,12 @@ export default class AuthService {
         try {
             const user = await this.userService.findByEmail(params.email);
             if (!user) {
-                throw new NotFoundError(`User with email: ${params.email} not found`);
+                throw new NotFoundError(ErrorMessages.userEmailNotFound(params.email));
             }
 
             const isValidPassword = await bcrypt.compare(params.password, user.password);
             if (!isValidPassword) {
-                throw new InvalidCredentials('Invalid credentials.');
+                throw new InvalidCredentials(ErrorMessages.INVALID_CREDENTIALS);
             }
 
             const accessToken = jwt.sign({
@@ -64,12 +65,12 @@ export default class AuthService {
 
     public async refresh(refreshToken: string): Promise<JwtResponse> {
         if (!refreshToken.trim()) {
-            throw new InvalidCredentials('Missing token.');
+            throw new InvalidCredentials(ErrorMessages.MISSING_TOKEN);
         }
 
         const user = jwt.verify(refreshToken, process.env.JWT_SECRET_REFRESH as string) as UserJwtPayload;
         if (!user) {
-            throw new InvalidCredentials('Invalid refresh token');
+            throw new InvalidCredentials(ErrorMessages.INVALID_REFRESH_TOKEN);
         }
 
         const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: this.expiresIn });

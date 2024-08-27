@@ -11,3 +11,10 @@ export class InvalidCredentials extends Error {
         this.name = 'InvalidCredentials';
     }
 }
+
+export class BadRequestError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'BadRequestError';
+    }
+}

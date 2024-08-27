@@ -10,4 +10,8 @@ router.post('/', asyncRequestHandler(async (request: Request, response: Response
     await userController.findAll(request, response);
 }));
 
+router.get('/info', asyncRequestHandler(async (req: Request, res: Response) => {
+    await userController.getInfo(req, res);
+}));
+
 export default router;

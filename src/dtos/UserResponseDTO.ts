@@ -1,4 +1,3 @@
-import Permission from "../entities/Permission";
 import User from "../entities/User";
 
 export default class UserResponseDTO {
@@ -7,7 +6,6 @@ export default class UserResponseDTO {
     private lastName: string;
     private email: string;
     private role: string;
-    private permissions: string[];
 
     constructor(user: User) {
         this.id = user.id;
@@ -15,6 +13,5 @@ export default class UserResponseDTO {
         this.lastName = user.lastName;
         this.email = user.email;
         this.role = user.role.roleName;
-        this.permissions = user.role.permissions.map((permission: Permission) => permission.permissionName);
     }
 }
