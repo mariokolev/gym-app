@@ -5,6 +5,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { InvalidCredentials, NotFoundError } from "../errors/CustomErrors";
 import Permission from "../entities/Permission";
 import { ErrorMessages } from "../errors/ErrorMessages";
+import logger from "../utils/logger";
 
 interface AuthParams {
     email: string;
@@ -27,40 +28,31 @@ export default class AuthService {
     constructor(@inject(UserService) private userService: UserService) { }
 
     public async auth(params: AuthParams): Promise<JwtResponse> {
-        try {
-            const user = await this.userService.findByEmail(params.email);
-            if (!user) {
-                throw new NotFoundError(ErrorMessages.userEmailNotFound(params.email));
-            }
-
-            const isValidPassword = await bcrypt.compare(params.password, user.password);
-            if (!isValidPassword) {
-                throw new InvalidCredentials(ErrorMessages.INVALID_CREDENTIALS);
-            }
-
-            const accessToken = jwt.sign({
-                id: user.id,
-                role: user.role.roleName,
-                permissions: user.role.permissions.map((permission: Permission) => permission.permissionName)
-            }
-                , process.env.JWT_SECRET as string, { expiresIn: this.expiresIn }
-            );
-
-            const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET_REFRESH as string, { expiresIn: '7d' });
-
-            return {
-                accessToken: accessToken,
-                refreshToken: refreshToken,
-                expiresIn: this.expiresIn
-            };
-
-        } catch (error) {
-            if (error instanceof NotFoundError || error instanceof InvalidCredentials) {
-                throw error;
-            }
-
-            throw new Error('Failed authorization');
+        const user = await this.userService.findByEmail(params.email);
+        if (!user) {
+            throw new NotFoundError(ErrorMessages.userEmailNotFound(params.email));
         }
+
+        const isValidPassword = await bcrypt.compare(params.password, user.password);
+        if (!isValidPassword) {
+            throw new InvalidCredentials(ErrorMessages.INVALID_CREDENTIALS);
+        }
+
+        const accessToken = jwt.sign({
+            id: user.id,
+            role: user.role.roleName,
+            permissions: user.role.permissions.map((permission: Permission) => permission.permissionName)
+        }
+            , process.env.JWT_SECRET as string, { expiresIn: this.expiresIn }
+        );
+
+        const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET_REFRESH as string, { expiresIn: '7d' });
+
+        return {
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            expiresIn: this.expiresIn
+        };
     }
 
     public async refresh(refreshToken: string): Promise<JwtResponse> {
@@ -70,7 +62,7 @@ export default class AuthService {
 
         const user = jwt.verify(refreshToken, process.env.JWT_SECRET_REFRESH as string) as UserJwtPayload;
         if (!user) {
-            throw new InvalidCredentials(ErrorMessages.INVALID_REFRESH_TOKEN);
+            throw new InvalidCredentials(ErrorMessages.INVALID_TOKEN);
         }
 
         const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: this.expiresIn });

@@ -6,3 +6,6 @@ node_modules/
 
 # Build directories
 dist/
+
+# logs
+logs/
