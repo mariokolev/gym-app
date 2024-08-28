@@ -3,14 +3,14 @@ import DailyRotateFile from "winston-daily-rotate-file";
 
 const { printf, timestamp, combine, errors } = format;
 const logFormat = printf(({ level, message, timestamp, stack}) => {
-    return `${timestamp} [${level.toUpperCase()}]: ${stack || message}}`
+    return `${timestamp} [${level.toUpperCase()}][${message}]: ${stack}`;
 });
 
 const logger = createLogger({
     level: 'info',
     format: combine(
         timestamp(),
-        errors({ stack: true }),
+        errors({ name: true, message: true, stack: true }),
         logFormat
     ),
     transports: [
