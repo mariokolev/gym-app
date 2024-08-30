@@ -1,9 +1,8 @@
 import { DataSource } from "typeorm";
-import Gym from "./entities/Gym";
-import User from "./entities/User";
-import Role from "./entities/Role";
-import Permission from "./entities/Permission";
-import GymLocation from "./entities/GymLocation";
+import path from "path";
+
+// require for migrations
+require('dotenv').config();
 
 export const AppDataSource = new DataSource({
     type: 'postgres',
@@ -13,8 +12,9 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     synchronize: false, // Set to false in production
-    logging: true,
-    entities: [User, Role, Permission, Gym, GymLocation],
-    migrations: [__dirname + '/migrations/*.ts'],
+    logging: false,
+    entities: [path.join(__dirname, './entities/*.js')],
+    migrations: [path.join(__dirname, './migrations/*.ts')],
+    migrationsTableName: 'migrations_history',
     subscribers: [],
 });
